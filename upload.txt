@@ -1,0 +1,1 @@
+Test upload to s3 with node.js
