@@ -1,0 +1,30 @@
+{
+  "name": "tamvan-s3-uploader",
+  "version": "1.0.0",
+  "description": "Tamvan S3 Uploader",
+  "main": "uploader.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blanford-fox-2016/upload-file-to-s3.git"
+  },
+  "keywords": [
+    "aws",
+    "s3",
+    "tamvan",
+    "uploader"
+  ],
+  "author": "Septian Adhi Tama",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blanford-fox-2016/upload-file-to-s3/issues"
+  },
+  "homepage": "https://github.com/blanford-fox-2016/upload-file-to-s3#readme",
+  "dependencies": {
+    "aws-sdk": "^2.7.11",
+    "node-uuid": "^1.4.7",
+    "uuid": "^3.0.1"
+  }
+}
