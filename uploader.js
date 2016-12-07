@@ -1,36 +1,94 @@
-/*
- * Copyright 2013. Amazon Web Services, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-**/
+// // Load the SDK and UUID
+// var AWS = require('aws-sdk');
+// var uuid = require('node-uuid');
+//
+// // Create an S3 client
+// var s3 = new AWS.S3();
+//
+// // Create a bucket and upload something into it
+// var bucketName = 'bucket-tamvan' + uuid.v4();
+// var keyName = 'test.txt';
+//
+// s3.createBucket({Bucket: bucketName}, function() {
+//   var params = {Bucket: bucketName, Key: keyName, Body: 'Hello World!'};
+//   s3.putObject(params, function(err, data) {
+//     if (err)
+//       console.log(err)
+//     else
+//       console.log("Successfully uploaded data to " + bucketName + "/" + keyName);
+//   });
+// });
 
-// Load the SDK and UUID
-var AWS = require('aws-sdk');
-var uuid = require('node-uuid');
+//running with 'node uploader.js bucketName fileName'
+//Access Key ID and Access Key ID Secret already taken by ~/.aws/credentials
 
-// Create an S3 client
-var s3 = new AWS.S3();
+'use strict'
 
-// Create a bucket and upload something into it
-var bucketName = 'node-sdk-sample-' + uuid.v4();
-var keyName = 'test.txt';
+const AWS = require('aws-sdk')
+const fs = require('fs')
 
-s3.createBucket({Bucket: bucketName}, function() {
-  var params = {Bucket: bucketName, Key: keyName, Body: 'Hello World!'};
-  s3.putObject(params, function(err, data) {
-    if (err)
-      console.log(err)
-    else
-      console.log("Successfully uploaded data to " + bucketName + "/" + keyName);
-  });
-});
+const selectedBucket = process.argv[2]
+const selectedFile = process.argv[3]
+
+fs.readFile(`./${selectedFile}`, function(err, data){
+  if(err){
+    console.log(err);
+    return
+  }
+
+  var base64data = new Buffer(data, 'binary')
+
+  var s3 = new AWS.S3()
+
+  s3.listBuckets((err, dataBuckets) => {
+    if (err) {
+      console.log(err);
+    }else{
+      let checkBucketExist = dataBuckets.Buckets.map((bucket) => {
+        return bucket.Name
+      }).indexOf(selectedBucket)
+
+      if(checkBucketExist === -1 ){//bucket no exist
+        s3.createBucket({
+          Bucket: `${selectedBucket}`
+        }, function(err, data) {
+          if (err) {
+            if(err.code === 'BucketAlreadyExists'){
+              console.log(`Bucket ${selectedBucket} already exist`);
+            } else {
+              console.log("Error", err);
+            }
+          } else {
+            console.log("Success created new bucket", data.Location);
+
+            s3.putObject({
+              Bucket: `${selectedBucket}`,
+              Key: `${selectedFile}`,
+              Body: base64data,
+              ACL: 'public-read'
+            }, function(response){
+              if(response === null){
+                console.log(`Success uploaded file ${selectedFile} to new ${selectedBucket}`);
+              }else{
+                console.log(response);
+              }
+            })
+          }
+        });
+      } else {
+        s3.putObject({
+          Bucket: `${selectedBucket}`,
+          Key: `${selectedFile}`,
+          Body: base64data,
+          ACL: 'public-read'
+        }, function(response){
+          if(response === null){
+            console.log(`Success uploaded file ${selectedFile} to existed ${selectedBucket}`);
+          }else{
+            console.log(response);
+          }
+        })
+      }
+    }
+  })
+})
